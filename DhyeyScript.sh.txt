@@ -1,0 +1,72 @@
+#!/bin/bash
+ 
+# Define log file
+LOG_FILE="$HOME/system_report.log"
+ 
+# Function to print colored output
+print_color() {
+    case $1 in
+        "green") COLOR="\e[32m" ;;
+        "red") COLOR="\e[31m" ;;
+        "blue") COLOR="\e[34m" ;;
+        "yellow") COLOR="\e[33m" ;;
+        *) COLOR="\e[0m" ;; # Default color
+    esac
+    echo -e "${COLOR}$2\e[0m"
+}
+ 
+# 1. System Uptime
+print_color "blue" "System Uptime:"
+uptime | tee -a $LOG_FILE
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 2. Display Disk Usage
+print_color "yellow" "Disk Usage:"
+df -h | tee -a $LOG_FILE
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 3. List Running Processes of a Specific User
+USER_NAME=$(whoami) # Gets the current logged-in user
+print_color "green" "Processes running by user: $USER_NAME"
+ps -u $USER_NAME | tee -a $LOG_FILE
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 4. Backup a Directory
+SOURCE_DIR="$HOME/Documents"
+BACKUP_DIR="$HOME/backup"
+mkdir -p $BACKUP_DIR
+tar -czf "$BACKUP_DIR/backup_$(date +%Y%m%d%H%M%S).tar.gz" $SOURCE_DIR
+print_color "red" "Backup of $SOURCE_DIR completed in $BACKUP_DIR"
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 5. Find Largest File in a Directory
+SEARCH_DIR="/var/log"
+print_color "yellow" "Largest file in $SEARCH_DIR:"
+find $SEARCH_DIR -type f -exec du -ah {} + | sort -rh | head -n 1 | tee -a $LOG_FILE
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 6. Check Memory Usage
+print_color "blue" "Memory Usage:"
+free -h | tee -a $LOG_FILE
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 7. Ping a Website and Log the Result
+WEBSITE="google.com"
+print_color "green" "Pinging $WEBSITE..."
+ping -c 4 $WEBSITE | tee -a $LOG_FILE
+print_color "green" "Ping result saved to $LOG_FILE"
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+# 8. Run a Python Loop for User Interaction
+print_color "red" "Starting Python script..."
+python3 <<EOF
+import time
+ 
+for i in range(1, 6):
+    print(f"Python Loop Iteration {i}")
+    time.sleep(1)
+print("Python loop completed!")
+EOF
+echo "-------------------------------------------" | tee -a $LOG_FILE
+ 
+print_color "blue" "Script execution completed! Check the log file at $LOG_FILE"
